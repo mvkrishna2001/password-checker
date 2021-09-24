@@ -20,7 +20,6 @@ def request_matches(head: str) -> List[str]:
     res = get(url)
 
     if res.status_code == 200:
-        # print(res.text.splitlines())
         return res.text.splitlines()
     else:
         raise RuntimeError(f'The status code is {res.status_code}')
@@ -35,7 +34,8 @@ def check(tail: str, matches: List[str]) -> int:
     return ret
 
 
-def respond(count: int) -> None:
+def respond(count: int, idx: int) -> None:
+    print(f'{idx+1}.', end=' ')
     if count == 0:
         print("Your password has not been exposed. Pretty sure you are a hacker!")
     else:
@@ -43,17 +43,16 @@ def respond(count: int) -> None:
 
 
 if __name__ == '__main__':
-    # passwords = sys.argv[1:]
-    # passwords = ['hELlo']
     passwords = []
     for idx in range(int(input("How many passwords do you wanna check: "))):
         passwords.append(pwinput.pwinput(prompt="{}. Type your password here: ".format(idx+1), mask='*'))
     start_time = time.time()
     hashs = get_hashed_passwords(passwords)
 
-    for password, hashed_password in zip(passwords, hashs):
+    for idx, (password, hashed_password) in enumerate(zip(passwords, hashs)):
         head, tail = hashed_password[:5], hashed_password[5:]
         matches = request_matches(head)
         leak_count = check(tail, matches)
-        respond(leak_count)
-        print(f'Checking this password took {time.time()-start_time} s')
+        respond(leak_count, idx)
+        print(f'\tChecking this password took {time.time()-start_time} s')
+    print("You're welcome ;}")
